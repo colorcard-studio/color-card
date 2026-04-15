@@ -405,6 +405,63 @@ body {
 .live-guide-overlay.show .live-guide-modal {
   transform: translateY(0) scale(1);
 }
+
+/* ── Save Image Overlay (mobile long-press save) ── */
+.save-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 20px;
+}
+.save-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.save-overlay-hint {
+  color: #fff;
+  font-size: 16px;
+  margin-bottom: 16px;
+  text-align: center;
+  opacity: 0.9;
+  animation: saveHintPulse 2s ease-in-out infinite;
+}
+@keyframes saveHintPulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.5; }
+}
+.save-overlay img {
+  max-width: 80%;
+  max-height: 70vh;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  -webkit-touch-callout: default !important;
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+}
+.save-overlay-close {
+  margin-top: 20px;
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 15px;
+  padding: 10px 32px;
+  border-radius: 25px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.save-overlay-close:active {
+  background: rgba(255,255,255,0.3);
+}
+
 .live-guide-title {
   font-size: 20px;
   font-weight: 600;
@@ -1645,6 +1702,13 @@ body {
   </button>
 </div>
 
+<!-- Save image overlay for mobile long-press -->
+<div class="save-overlay" id="saveOverlay" onclick="if(event.target===this)closeSaveOverlay()">
+  <div class="save-overlay-hint">📲 长按下方图片即可保存到相册</div>
+  <img id="saveOverlayImg" src="" alt="Color Card">
+  <button class="save-overlay-close" onclick="closeSaveOverlay()">关闭</button>
+</div>
+
 <!-- Hidden canvas for color extraction -->
 <canvas id="hiddenCanvas" style="display:none;"></canvas>
 
@@ -1693,6 +1757,8 @@ const state = {
 
 const isMobile = () => window.innerWidth <= 768;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+const isMobileBrowser = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
 // ═══════════════════════════════════════════════
 // DOM references
@@ -3261,18 +3327,39 @@ function drawPhotoCover(ctx, source, W, H) {
   ctx.drawImage(source, sx, sy, sw, sh, 0, blockH, W, photoH);
 }
 
+// ── Save overlay helpers ──
+function showSaveOverlay(blobOrDataUrl) {
+  const overlay = document.getElementById('saveOverlay');
+  const img = document.getElementById('saveOverlayImg');
+  if (blobOrDataUrl instanceof Blob) {
+    img.src = URL.createObjectURL(blobOrDataUrl);
+  } else {
+    img.src = blobOrDataUrl;
+  }
+  overlay.classList.add('show');
+}
+function closeSaveOverlay() {
+  const overlay = document.getElementById('saveOverlay');
+  const img = document.getElementById('saveOverlayImg');
+  overlay.classList.remove('show');
+  setTimeout(() => {
+    if (img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+    img.src = '';
+  }, 300);
+}
+
 // Helper: download a blob
 function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  if (isIOS) {
-    window.open(url, '_blank');
-  } else {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+  if (isMobileBrowser) {
+    showSaveOverlay(blob);
+    return;
   }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 async function exportImage(mode) {
@@ -3295,16 +3382,14 @@ async function exportImage(mode) {
   // Export
   if (mode === 'download') {
     canvas.toBlob(blob => {
-      const url = URL.createObjectURL(blob);
-      if (isIOS) {
-        window.open(url, '_blank');
-        showToast('长按图片即可保存');
+      if (isMobileBrowser) {
+        showSaveOverlay(blob);
       } else {
         const a = document.createElement('a');
-        a.href = url;
+        a.href = URL.createObjectURL(blob);
         a.download = 'color-card.png';
         a.click();
-        URL.revokeObjectURL(url);
+        URL.revokeObjectURL(a.href);
         showToast('图片已保存');
       }
     }, 'image/png');
@@ -3315,14 +3400,12 @@ async function exportImage(mode) {
       showToast('已复制到剪贴板');
     } catch (err) {
       canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        if (isIOS) {
-          window.open(url, '_blank');
-          showToast('长按图片保存');
+        if (isMobileBrowser) {
+          showSaveOverlay(blob);
         } else {
           const a = document.createElement('a');
-          a.href = url; a.download = 'color-card.png'; a.click();
-          URL.revokeObjectURL(url);
+          a.href = URL.createObjectURL(blob); a.download = 'color-card.png'; a.click();
+          URL.revokeObjectURL(a.href);
           showToast('复制失败，已下载图片');
         }
       }, 'image/png');
@@ -3425,11 +3508,8 @@ async function exportLivePhoto() {
 
     const videoBlob = new Blob(chunks, { type: mimeType });
 
-    if (isIOS) {
-      // On iOS: open in new tab so user can long-press → Save to Photos
-      const url = URL.createObjectURL(videoBlob);
-      window.open(url, '_blank');
-      showToast('长按视频即可保存到相册');
+    if (isMobileBrowser) {
+      downloadBlob(videoBlob, 'color-card.' + fileExt);
     } else {
       downloadBlob(videoBlob, 'color-card.' + fileExt);
       showToast('视频已保存');
