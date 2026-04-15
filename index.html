@@ -438,7 +438,7 @@ body {
   0%, 100% { opacity: 0.9; }
   50% { opacity: 0.5; }
 }
-.save-overlay img {
+.save-overlay img, .save-overlay video {
   max-width: 80%;
   max-height: 70vh;
   border-radius: 12px;
@@ -446,6 +446,24 @@ body {
   -webkit-touch-callout: default !important;
   -webkit-user-select: auto !important;
   user-select: auto !important;
+}
+.save-overlay video { background: #000; }
+.save-overlay-download {
+  display: none;
+  margin-top: 12px;
+  background: rgba(255,255,255,0.95);
+  color: #333;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 36px;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.save-overlay-download:active {
+  background: rgba(255,255,255,0.7);
 }
 .save-overlay-close {
   margin-top: 20px;
@@ -1702,10 +1720,12 @@ body {
   </button>
 </div>
 
-<!-- Save image overlay for mobile long-press -->
+<!-- Save image/video overlay for mobile long-press -->
 <div class="save-overlay" id="saveOverlay" onclick="if(event.target===this)closeSaveOverlay()">
-  <div class="save-overlay-hint">📲 长按下方图片即可保存到相册</div>
+  <div class="save-overlay-hint" id="saveOverlayHint">📲 长按下方图片即可保存到相册</div>
   <img id="saveOverlayImg" src="" alt="Color Card">
+  <video id="saveOverlayVideo" src="" playsinline controls loop style="display:none"></video>
+  <a id="saveOverlayDownload" class="save-overlay-download" href="#" download="color-card.mp4">📥 点击保存视频</a>
   <button class="save-overlay-close" onclick="closeSaveOverlay()">关闭</button>
 </div>
 
@@ -3328,30 +3348,85 @@ function drawPhotoCover(ctx, source, W, H) {
 }
 
 // ── Save overlay helpers ──
-function showSaveOverlay(blobOrDataUrl) {
+function showSaveOverlay(blobOrDataUrl, isVideo, filename) {
   const overlay = document.getElementById('saveOverlay');
   const img = document.getElementById('saveOverlayImg');
-  if (blobOrDataUrl instanceof Blob) {
-    img.src = URL.createObjectURL(blobOrDataUrl);
+  const vid = document.getElementById('saveOverlayVideo');
+  const hint = document.getElementById('saveOverlayHint');
+  const dlBtn = document.getElementById('saveOverlayDownload');
+
+  // Reset both
+  img.style.display = 'none';
+  vid.style.display = 'none';
+  dlBtn.style.display = 'none';
+
+  if (isVideo) {
+    // Video mode — show video player + download link
+    hint.textContent = '🎬 点击下方按钮保存视频';
+    const url = (blobOrDataUrl instanceof Blob) ? URL.createObjectURL(blobOrDataUrl) : blobOrDataUrl;
+    vid.src = url;
+    vid.style.display = 'block';
+    // Try native share first on mobile
+    if (navigator.share && blobOrDataUrl instanceof Blob) {
+      dlBtn.textContent = '📤 保存/分享视频';
+      dlBtn.href = '#';
+      dlBtn.removeAttribute('download');
+      dlBtn.style.display = 'inline-block';
+      dlBtn.onclick = async function(e) {
+        e.preventDefault();
+        try {
+          const f = new File([blobOrDataUrl], filename || 'color-card.mp4', { type: blobOrDataUrl.type || 'video/mp4' });
+          await navigator.share({ files: [f] });
+        } catch(err) {
+          // Fallback: direct download
+          const a = document.createElement('a');
+          a.href = url; a.download = filename || 'color-card.mp4'; a.click();
+        }
+      };
+    } else {
+      dlBtn.textContent = '📥 点击保存视频';
+      dlBtn.href = url;
+      dlBtn.download = filename || 'color-card.mp4';
+      dlBtn.style.display = 'inline-block';
+      dlBtn.onclick = null;
+    }
+    vid.play().catch(() => {});
   } else {
-    img.src = blobOrDataUrl;
+    // Image mode — show img for long-press save
+    hint.textContent = '📲 长按下方图片即可保存到相册';
+    if (blobOrDataUrl instanceof Blob) {
+      img.src = URL.createObjectURL(blobOrDataUrl);
+    } else {
+      img.src = blobOrDataUrl;
+    }
+    img.style.display = 'block';
   }
   overlay.classList.add('show');
 }
 function closeSaveOverlay() {
   const overlay = document.getElementById('saveOverlay');
   const img = document.getElementById('saveOverlayImg');
+  const vid = document.getElementById('saveOverlayVideo');
+  const dlBtn = document.getElementById('saveOverlayDownload');
   overlay.classList.remove('show');
+  vid.pause();
+  dlBtn.onclick = null;
   setTimeout(() => {
-    if (img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+    if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+    if (vid.src && vid.src.startsWith('blob:')) URL.revokeObjectURL(vid.src);
     img.src = '';
+    vid.src = '';
+    dlBtn.href = '#';
   }, 300);
 }
 
 // Helper: download a blob
 function downloadBlob(blob, filename) {
   if (isMobileBrowser) {
-    showSaveOverlay(blob);
+    const isVideo = (blob instanceof Blob && blob.type && blob.type.startsWith('video/'))
+                 || (blob instanceof File && blob.type && blob.type.startsWith('video/'))
+                 || (typeof filename === 'string' && /\.(mp4|mov|webm|m4v)$/i.test(filename));
+    showSaveOverlay(blob, isVideo, filename);
     return;
   }
   const url = URL.createObjectURL(blob);
