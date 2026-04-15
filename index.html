@@ -487,171 +487,6 @@ body {
   flex-wrap: wrap;
   justify-content: center;
 }
-.live-convert-btn {
-  display: none;
-  background: linear-gradient(135deg, #a78bfa, #818cf8);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 12px 28px;
-  border-radius: 25px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 15px rgba(129,140,248,0.4);
-}
-.live-convert-btn:active {
-  transform: scale(0.96);
-  box-shadow: 0 2px 8px rgba(129,140,248,0.3);
-}
-.live-convert-guide {
-  display: none;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 24px 20px;
-  margin-top: 16px;
-  max-width: 340px;
-  width: 90vw;
-  text-align: left;
-  animation: guideSlideUp 0.35s ease;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-}
-.live-convert-guide.show { display: block; }
-@keyframes guideSlideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.live-guide-header {
-  font-size: 17px;
-  font-weight: 700;
-  color: #1d1d1f;
-  margin-bottom: 14px;
-  text-align: center;
-}
-.live-guide-header span { font-size: 20px; vertical-align: middle; }
-.live-guide-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  font-size: 14px;
-  color: #424245;
-  line-height: 1.6;
-}
-.live-guide-step:last-child { border-bottom: none; }
-.live-guide-num {
-  flex-shrink: 0;
-  width: 24px; height: 24px;
-  background: linear-gradient(135deg, #a78bfa, #818cf8);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  margin-top: 2px;
-}
-.live-guide-shortcut-btn {
-  display: inline-block;
-  margin-top: 14px;
-  width: 100%;
-  text-align: center;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #34d399, #10b981);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 14px;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 15px rgba(16,185,129,0.3);
-}
-.live-guide-shortcut-btn:active {
-  transform: scale(0.97);
-}
-.live-guide-tip {
-  margin-top: 12px;
-  font-size: 12px;
-  color: #999;
-  text-align: center;
-  line-height: 1.5;
-}
-
-.live-guide-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin-bottom: 16px;
-  text-align: center;
-}
-.live-guide-steps {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 20px;
-}
-.live-guide-steps li {
-  display: flex;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  font-size: 14px;
-  color: #424245;
-  line-height: 1.5;
-}
-.live-guide-steps li:last-child { border-bottom: none; }
-.live-guide-step-num {
-  flex-shrink: 0;
-  width: 24px; height: 24px;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: 1px;
-}
-.live-guide-actions {
-  display: flex;
-  gap: 10px;
-}
-.live-guide-actions button {
-  flex: 1;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.live-guide-upload {
-  background: var(--accent);
-  color: #fff;
-}
-.live-guide-upload:hover { opacity: 0.85; }
-.live-guide-cancel {
-  background: rgba(0,0,0,0.06);
-  color: #424245;
-}
-.live-guide-cancel:hover { background: rgba(0,0,0,0.1); }
-.live-guide-tip {
-  margin-top: 16px;
-  padding: 12px;
-  background: rgba(138,125,107,0.06);
-  border-radius: 10px;
-  font-size: 12px;
-  color: #6e6e73;
-  line-height: 1.6;
-  text-align: center;
-}
 
 /* Change photo button */
 .change-photo-actions {
@@ -1830,30 +1665,6 @@ body {
   <video id="saveOverlayVideo" src="" playsinline controls loop style="display:none"></video>
   <div class="save-overlay-actions">
     <a id="saveOverlayDownload" class="save-overlay-download" href="#" download="color-card.mp4">📥 点击保存视频</a>
-    <button id="liveConvertBtn" class="live-convert-btn" onclick="toggleLiveConvertGuide()">🔮 转为实况照片</button>
-  </div>
-  <!-- Live Photo Conversion Guide Panel -->
-  <div id="liveConvertGuide" class="live-convert-guide">
-    <div class="live-guide-header"><span>🔮</span> 视频转实况照片</div>
-    <div class="live-guide-step">
-      <span class="live-guide-num">1</span>
-      <span>点击上方 <b>「保存/分享视频」</b> 按钮，将视频保存到相册</span>
-    </div>
-    <div class="live-guide-step">
-      <span class="live-guide-num">2</span>
-      <span>点击下方按钮打开 <b>「快捷指令」</b> App，安装实况转换指令（仅首次需要）</span>
-    </div>
-    <div class="live-guide-step">
-      <span class="live-guide-num">3</span>
-      <span>运行快捷指令，选择刚保存的视频，自动生成 <b>Live Photo</b> 并保存</span>
-    </div>
-    <a id="shortcutLink" class="live-guide-shortcut-btn" href="shortcuts://gallery/search?query=Make%20Live%20Photo" target="_blank" rel="noopener" onclick="openShortcutGuide(event)">
-      📲 打开「快捷指令」搜索转换工具
-    </a>
-    <div class="live-guide-tip">
-      💡 也可在 App Store 搜索 <b>「intolive」</b>（免费）<br>
-      打开后选择视频即可一键转为实况照片
-    </div>
   </div>
   <button class="save-overlay-close" onclick="closeSaveOverlay()">关闭</button>
 </div>
@@ -2881,7 +2692,7 @@ function applyExifToTemplate() {
     // 地点 · 时间
     if (loc && time) line1 = `${loc} · ${time}`;
     else if (loc) line1 = loc;
-    else if (time) line1 = time;
+    else if (time) line1 = `At the moment · ${time}`;
     else return; // no data yet
   } else if (state.template === 'b') {
     // 色号：当前背景色转 HEX
@@ -3483,30 +3294,21 @@ function showSaveOverlay(blobOrDataUrl, isVideo, filename) {
   const vid = document.getElementById('saveOverlayVideo');
   const hint = document.getElementById('saveOverlayHint');
   const dlBtn = document.getElementById('saveOverlayDownload');
-  const liveBtn = document.getElementById('liveConvertBtn');
-  const liveGuide = document.getElementById('liveConvertGuide');
   const actionsBar = dlBtn.parentElement; // .save-overlay-actions
 
   // Reset all
   img.style.display = 'none';
   vid.style.display = 'none';
   dlBtn.style.display = 'none';
-  liveBtn.style.display = 'none';
   actionsBar.style.display = 'none';
-  liveGuide.classList.remove('show');
 
   if (isVideo) {
-    // Video mode — show video player + download link + live photo guide
+    // Video mode — show video player + download link
     hint.textContent = '🎬 点击下方按钮保存视频';
     const url = (blobOrDataUrl instanceof Blob) ? URL.createObjectURL(blobOrDataUrl) : blobOrDataUrl;
     vid.src = url;
     vid.style.display = 'block';
     actionsBar.style.display = 'flex';
-    // Show Live Photo convert button on iOS
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (isIOS) {
-      liveBtn.style.display = 'inline-block';
-    }
     // Try native share first on mobile
     if (navigator.share && blobOrDataUrl instanceof Blob) {
       dlBtn.textContent = '📤 保存/分享视频';
@@ -3549,11 +3351,9 @@ function closeSaveOverlay() {
   const img = document.getElementById('saveOverlayImg');
   const vid = document.getElementById('saveOverlayVideo');
   const dlBtn = document.getElementById('saveOverlayDownload');
-  const liveGuide = document.getElementById('liveConvertGuide');
   overlay.classList.remove('show');
   vid.pause();
   dlBtn.onclick = null;
-  liveGuide.classList.remove('show');
   setTimeout(() => {
     if (img.src && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
     if (vid.src && vid.src.startsWith('blob:')) URL.revokeObjectURL(vid.src);
@@ -3561,27 +3361,6 @@ function closeSaveOverlay() {
     vid.src = '';
     dlBtn.href = '#';
   }, 300);
-}
-
-function toggleLiveConvertGuide() {
-  const guide = document.getElementById('liveConvertGuide');
-  guide.classList.toggle('show');
-}
-
-function openShortcutGuide(e) {
-  // On iOS, try the shortcuts:// URL scheme to open Shortcuts app gallery
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (isIOS) {
-    e.preventDefault();
-    // Try opening Shortcuts gallery search
-    window.location.href = 'shortcuts://gallery/search?query=Live%20Photo';
-    // Fallback: if shortcuts URL scheme doesn't work (user may not have Shortcuts)
-    setTimeout(() => {
-      // If we're still here, open App Store for intolive
-      window.open('https://apps.apple.com/app/intolive-live-wallpapers/id1061859052', '_blank');
-    }, 2000);
-  }
-  // On non-iOS, the href link will just open the intolive App Store page
 }
 
 // Helper: download a blob
